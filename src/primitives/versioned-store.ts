@@ -1,4 +1,4 @@
-import type { SECEntry, SECSnapshot, CASResult } from './types.js'
+import type { SECEntry, SECSnapshot, CASResult, SECBackend } from './types.js'
 
 /**
  * VersionedStore - P-02
@@ -6,8 +6,12 @@ import type { SECEntry, SECSnapshot, CASResult } from './types.js'
  * Serves as the SEC (Shared Execution Context) backend.
  *
  * Zero dependencies. Thread-safe via single-threaded event loop.
+ * Implements SECBackend interface for in-memory, single-node deployments.
+ *
+ * WARNING: This in-memory implementation is NOT safe for multi-node deployments.
+ * Use RedisVersionedStore or equivalent for distributed deployments.
  */
-export class VersionedStore {
+export class VersionedStore implements SECBackend {
   private store = new Map<string, { value: any; version_id: number; run_id: string }>()
   private runIndex = new Map<string, Set<string>>() // run_id → Set<key>
 
@@ -15,7 +19,7 @@ export class VersionedStore {
    * Get current value and version for a key
    * Returns undefined if key does not exist
    */
-  get(key: string): { value: any; version_id: number } | undefined {
+  async get(key: string): Promise<{ value: any; version_id: number } | undefined> {
     const entry = this.store.get(key)
     if (!entry) {
       return undefined
@@ -36,7 +40,7 @@ export class VersionedStore {
    * @returns {success: true, current_version_id} on success
    * @returns {success: false, current_version_id} on version mismatch
    */
-  cas(key: string, expected_version_id: number, new_value: any, run_id: string): CASResult {
+  async cas(key: string, expected_version_id: number, new_value: any, run_id: string): Promise<CASResult> {
     const entry = this.store.get(key)
     const current_version_id = entry?.version_id ?? 0
 
@@ -88,7 +92,7 @@ export class VersionedStore {
    *
    * Non-existent keys return version_id = 0
    */
-  snapshot_read(keys: string[]): SECSnapshot {
+  async snapshot_read(keys: string[]): Promise<SECSnapshot> {
     const snapshot = new Map<string, number>()
 
     // Single-tick read for consistency
@@ -106,7 +110,7 @@ export class VersionedStore {
    *
    * @returns Array of SECEntry with full metadata
    */
-  list(run_id: string): SECEntry[] {
+  async list(run_id: string): Promise<SECEntry[]> {
     const keys = this.runIndex.get(run_id)
     if (!keys || keys.size === 0) {
       return []

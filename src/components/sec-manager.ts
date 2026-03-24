@@ -1,4 +1,3 @@
-import type { VersionedStore } from '../primitives/versioned-store.js'
 import type { MessageBus } from '../primitives/message-bus.js'
 import type { TicketSystem } from '../primitives/ticket-system.js'
 import type {
@@ -9,7 +8,8 @@ import type {
   AgentRole,
   WriteResult,
   ReadResult,
-  ConflictInfo
+  ConflictInfo,
+  SECBackend
 } from '../primitives/types.js'
 
 /**
@@ -17,10 +17,11 @@ import type {
  * Full Shared Execution Context lifecycle with OCC write protocol,
  * conflict resolution, executor read access, and snapshot reads.
  *
- * Dependencies: P-02 (VersionedStore), P-04 (MessageBus), P-19 (TicketSystem)
+ * Dependencies: P-02 (SECBackend), P-04 (MessageBus), P-19 (TicketSystem)
+ * Supports pluggable backends: VersionedStore (in-memory) or RedisVersionedStore (distributed)
  */
 export class SECManager {
-  private versionedStore: VersionedStore
+  private backend: SECBackend
   private messageBus: MessageBus
   private ticketSystem: TicketSystem
   private config: SECConfig
@@ -28,12 +29,12 @@ export class SECManager {
   private agentIdMap = new Map<string, string>() // key → agent_id (for merge logic)
 
   constructor(
-    versionedStore: VersionedStore,
+    backend: SECBackend,
     messageBus: MessageBus,
     ticketSystem: TicketSystem,
     config?: Partial<SECConfig>
   ) {
-    this.versionedStore = versionedStore
+    this.backend = backend
     this.messageBus = messageBus
     this.ticketSystem = ticketSystem
     this.config = {
@@ -54,14 +55,14 @@ export class SECManager {
    * @param policy - Conflict resolution policy (default: merge)
    * @returns WriteResult with success status, version_id, or conflict info
    */
-  write(
+  async write(
     key: string,
     value: any,
     run_id: string,
     agent_id: string,
     role: AgentRole,
     policy?: ConflictResolutionPolicy
-  ): WriteResult {
+  ): Promise<WriteResult> {
     // Access control: executors cannot write
     if (role === 'executor') {
       return {
@@ -82,16 +83,16 @@ export class SECManager {
     // OCC write loop with retry
     while (retryCount <= this.config.max_occ_retries) {
       // Read current version
-      const current = this.versionedStore.get(key)
+      const current = await this.backend.get(key)
       const expected_version_id = current?.version_id ?? 0
 
       // Attempt CAS write
-      const casResult = this.versionedStore.cas(key, expected_version_id, value, run_id)
+      const casResult = await this.backend.cas(key, expected_version_id, value, run_id)
 
       if (casResult.success) {
         // Write succeeded - store agent_id for merge logic
         this.agentIdMap.set(key, agent_id)
-        this.checkSizeLimit(run_id)
+        await this.checkSizeLimit(run_id)
 
         // Check if structural change occurred (for merge policy)
         const requires_redecompose = current && this.isStructurallyDifferent(current.value, value)
@@ -107,7 +108,7 @@ export class SECManager {
       retryCount++
 
       // Handle conflict based on policy
-      const currentEntry = this.versionedStore.get(key)
+      const currentEntry = await this.backend.get(key)
       if (!currentEntry) {
         // Key was deleted between read and write - rare edge case, retry
         continue
@@ -147,8 +148,8 @@ export class SECManager {
         }
 
         // Get current agent_id for merge
-        // If not in map yet, extract from run_id or use a default
-        const current_agent_id = this.agentIdMap.get(key) || currentEntry.run_id
+        // If not in map yet, use a default
+        const current_agent_id = this.agentIdMap.get(key) || 'unknown'
 
         // Attempt merge
         const mergeResult = this.attemptMerge(original_value, currentEntry.value, agent_id, current_agent_id)
@@ -198,8 +199,8 @@ export class SECManager {
    * @param role - Agent role (unused for now, all roles can read)
    * @returns ReadResult with value and version_id, or null if not found
    */
-  read(key: string, agent_id: string, role: AgentRole): ReadResult | null {
-    const entry = this.versionedStore.get(key)
+  async read(key: string, agent_id: string, role: AgentRole): Promise<ReadResult | null> {
+    const entry = await this.backend.get(key)
     if (!entry) {
       return null
     }
@@ -217,8 +218,8 @@ export class SECManager {
    * @param run_id - Run identifier (unused, for future filtering)
    * @returns Map of key → version_id
    */
-  snapshotRead(keys: string[], run_id: string): SECSnapshot {
-    return this.versionedStore.snapshot_read(keys)
+  async snapshotRead(keys: string[], run_id: string): Promise<SECSnapshot> {
+    return await this.backend.snapshot_read(keys)
   }
 
   /**
@@ -227,9 +228,9 @@ export class SECManager {
    * @param run_id - Run identifier
    * @returns Array of SEC entries
    */
-  list(run_id: string): SECEntry[] {
-    const entries = this.versionedStore.list(run_id)
-    this.checkSizeLimit(run_id)
+  async list(run_id: string): Promise<SECEntry[]> {
+    const entries = await this.backend.list(run_id)
+    await this.checkSizeLimit(run_id)
     return entries
   }
 
@@ -334,8 +335,8 @@ export class SECManager {
   /**
    * Check if SEC size exceeds limit and emit warning
    */
-  private checkSizeLimit(run_id: string): void {
-    const entries = this.versionedStore.list(run_id)
+  private async checkSizeLimit(run_id: string): Promise<void> {
+    const entries = await this.backend.list(run_id)
 
     if (entries.length > this.config.SEC_list_max_entries) {
       // Only emit once per run

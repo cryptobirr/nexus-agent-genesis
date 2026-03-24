@@ -280,7 +280,7 @@ Return ONLY valid JSON, no explanations.`
     const value = output.plan
 
     // SECManager handles OCC internally
-    const result = this.secManager.write(
+    const result = await this.secManager.write(
       key,
       value,
       config.run_id,

@@ -5,13 +5,15 @@ import type { ObservabilityModule } from '../modules/observability-module.js'
 import type { ConfigModule } from '../modules/config-module.js'
 import type { MessageBus } from '../primitives/message-bus.js'
 import type { BudgetLedger } from '../primitives/budget-ledger.js'
-import type { Run, RunConfig, RunStatus, BudgetState } from '../primitives/types.js'
+import type { Run, RunConfig, RunStatus, BudgetState, SECBackend } from '../primitives/types.js'
+import { VersionedStore } from '../primitives/versioned-store.js'
 
 /**
  * NexusAgentRuntime options
  */
 export interface NexusAgentRuntimeOptions {
   multi_node_mode?: boolean
+  secBackend?: SECBackend
 }
 
 /**
@@ -66,9 +68,12 @@ export class NexusAgentRuntime {
     const run_id = randomUUID()
     const started_at = Date.now()
 
-    // Check distributed mode constraint
+    // Validate SEC backend for distributed mode
     if (this.options.multi_node_mode) {
-      return this.failWithDistributedError(run_id, objective, config, started_at)
+      const backend = this.options.secBackend
+      if (!backend || backend instanceof VersionedStore) {
+        return this.failWithDistributedError(run_id, objective, config, started_at)
+      }
     }
 
     // Initialize run status

@@ -50,6 +50,42 @@ export interface CASResult {
 }
 
 /**
+ * SECBackend - Abstract interface for SEC storage backend
+ * Supports both in-memory (single-node) and distributed (Redis, etcd) implementations
+ *
+ * Requirements: SC-11, SC-12
+ */
+export interface SECBackend {
+  /**
+   * Get current value and version for a key
+   * Returns undefined if key does not exist
+   */
+  get(key: string): Promise<{ value: any; version_id: number } | undefined>
+
+  /**
+   * Compare-and-swap: atomic conditional update
+   * Succeeds only if current version_id matches expected_version_id
+   *
+   * For initial writes, use expected_version_id = 0
+   */
+  cas(key: string, expected_version_id: number, new_value: any, run_id: string): Promise<CASResult>
+
+  /**
+   * Snapshot read: consistent version_vector across multiple keys
+   * Returns Map<key, version_id> at a single point in time
+   *
+   * Non-existent keys return version_id = 0
+   */
+  snapshot_read(keys: string[]): Promise<SECSnapshot>
+
+  /**
+   * List all entries for a specific run_id
+   * Uses run_id-scoped index (no table scans)
+   */
+  list(run_id: string): Promise<SECEntry[]>
+}
+
+/**
  * DataRef - reference to blob in BlobStore
  */
 export interface DataRef {
