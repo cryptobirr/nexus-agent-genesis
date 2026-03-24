@@ -780,3 +780,41 @@ export interface RouterConfig {
   max_retries?: number  // default 1
   objective: string
 }
+
+/**
+ * PlanChild - F-02: Single child node in Planner decomposition
+ */
+export interface PlanChild {
+  child_id: string
+  strategy: Strategy
+  scope: string
+  covers_requirements: string[]
+  output_spec: OutputSpec
+  depends_on: string[]
+}
+
+/**
+ * PlannerOutput - F-02: Output structure from PlannerAgent
+ */
+export interface PlannerOutput {
+  decision: "decompose" | "execute_directly"
+  rationale: string
+  plan: string
+  plan_cost_estimate: number
+  sec_writes: Array<{key: string, value: any, version_id: number}>
+  children: PlanChild[]
+}
+
+/**
+ * PlannerConfig - F-02: Configuration for PlannerAgent.plan()
+ */
+export interface PlannerConfig {
+  run_id: string
+  agent_id: string
+  parent_scope: string
+  current_depth: number
+  max_depth: number
+  requirement_map: RequirementMap
+  available_budget: number
+  max_retries?: number  // default 2 for OCC
+}
