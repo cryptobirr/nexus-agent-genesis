@@ -671,3 +671,24 @@ export interface ToolExecutionResult {
   failure_type?: FailureType
   retry_attempted?: boolean
 }
+
+/**
+ * RetryOrchestratorConfig - C-07: Configuration for RetryOrchestrator
+ */
+export interface RetryOrchestratorConfig {
+  blob_write_retry_max: number  // default 3
+  similarity_threshold: number  // default 0.75 (for pattern injection)
+  max_retries: number  // default 3 (Inner Loop budget)
+  blob_write_backoff_base_ms: number  // default 100 (exponential backoff base)
+}
+
+/**
+ * RetryDecision - C-07: Decision output from RetryOrchestrator
+ */
+export interface RetryDecision {
+  should_retry: boolean
+  retry_prompt: string | null
+  should_escalate: boolean
+  retry_count_consumed: boolean  // false for infrastructure_failure, blob_write_failure
+  backoff_ms?: number  // for blob_write_failure exponential backoff
+}
