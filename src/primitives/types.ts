@@ -96,6 +96,7 @@ export interface Tool {
   input_schema: object
   output_schema: object
   side_effect_class: string
+  idempotent?: boolean  // default true - allows caching in ToolResultCache
 }
 
 /**
@@ -197,4 +198,13 @@ export interface AgentNode {
 export interface AgentResult {
   success: boolean
   output?: any
+}
+
+/**
+ * ToolResult - tool execution result for ToolResultCache (P-10)
+ */
+export interface ToolResult {
+  success: boolean
+  output?: any
+  error?: string
 }
