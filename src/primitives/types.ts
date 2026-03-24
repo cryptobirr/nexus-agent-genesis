@@ -48,3 +48,22 @@ export interface CASResult {
   success: boolean
   current_version_id: number
 }
+
+/**
+ * DataRef - reference to blob in BlobStore
+ */
+export interface DataRef {
+  ref_id: string
+  schema: string
+  size_bytes: number
+}
+
+/**
+ * BlobNotFoundError - thrown when reading non-existent blob
+ */
+export class BlobNotFoundError extends Error {
+  constructor(public ref_id: string) {
+    super(`Blob not found: ${ref_id}`)
+    this.name = 'BlobNotFoundError'
+  }
+}
