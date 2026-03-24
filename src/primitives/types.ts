@@ -354,3 +354,18 @@ export interface ChunkSummary {
   is_escalated: boolean  // If true, never compressed
   full_content?: string  // Only populated for escalated nodes
 }
+
+/**
+ * PlanCacheEntry - cached Router output indexed by objective embedding (P-18)
+ */
+export interface PlanCacheEntry {
+  objective_embedding: number[]
+  objective_text: string
+  run_config_hash: string
+  embedding_model_id: string
+  router_output: any
+  dependency_graph: any
+  requirement_map: RequirementMap
+  run_id: string
+  similarity_score?: number  // Populated on cache hit
+}
