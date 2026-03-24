@@ -909,3 +909,35 @@ export interface AdaptiveDepthControllerConfig {
   low_entropy_threshold: number   // 0.0 to 1.0 (default 0.95)
   max_depth: number               // Hard cap (default 10)
 }
+
+/**
+ * JudgingPolicy - M-02: Controls judge execution and dimension skipping
+ */
+export interface JudgingPolicy {
+  mode: 'full' | 'adaptive' | 'custom'
+  skip_non_binary: boolean
+  adaptive_skip_threshold: number  // Skip rate threshold for adaptive mode
+}
+
+/**
+ * FeedbackLoopHealth - M-02: Health metrics for feedback loop
+ * Emitted after every run with feedback_loop enabled
+ */
+export interface FeedbackLoopHealth {
+  run_id: string
+  judge_skip_rate: number
+  false_negative_rate: number
+  total_evaluations: number
+  skipped_evaluations: number
+  binary_dimensions_evaluated: number
+  timestamp: string
+}
+
+/**
+ * WeightSnapshot - M-02: Named snapshot of dimension weights for operator rollback
+ */
+export interface WeightSnapshot {
+  snapshot_id: string
+  weights: Map<string, number>
+  created_at: string
+}
