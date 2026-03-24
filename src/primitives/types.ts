@@ -754,3 +754,29 @@ export interface HITLModifications {
   brief?: string
   output?: string
 }
+
+/**
+ * RouterOutput - F-01: Output structure from RouterAgent
+ */
+export interface RouterOutput {
+  routing: "direct" | "plan"
+  depth_hint: number
+  complexity_classification: "atomic" | "simple" | "moderate" | "complex"
+  rationale: string
+  objective_refined: string
+  constraints: string[]
+  requirements: RequirementRecord[]  // 3-7 items
+  dependencies: DependencyGraph
+  plan_cost_estimate: number
+}
+
+/**
+ * RouterConfig - F-01: Configuration for RouterAgent.route()
+ */
+export interface RouterConfig {
+  run_id: string
+  run_config_hash: string
+  embedding_model_id: string
+  max_retries?: number  // default 1
+  objective: string
+}
