@@ -190,3 +190,11 @@ export interface AgentNode {
   node_id: string
   requirements_covered: string[]
 }
+
+/**
+ * AgentResult - agent execution result for IdempotencyCache
+ */
+export interface AgentResult {
+  success: boolean
+  output?: any
+}
