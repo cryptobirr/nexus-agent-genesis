@@ -97,6 +97,7 @@ export interface Tool {
   output_schema: object
   side_effect_class: string
   idempotent?: boolean  // default true - allows caching in ToolResultCache
+  retry_on_error?: boolean  // default false - retry tool call once on error (C-05)
 }
 
 /**
@@ -623,4 +624,50 @@ export interface RecursionGuardResult {
   overridden: boolean
   override_reason?: string
   original_decision?: RecursionDecision
+}
+
+/**
+ * ToolExecutionMode - C-05: Tool execution isolation mode
+ */
+export type ToolExecutionMode = "isolated" | "shared"
+
+/**
+ * DataAccessMode - C-05: Data access scope mode
+ */
+export type DataAccessMode = "scoped" | "run_wide"
+
+/**
+ * ViolationPolicy - C-05: Sandbox violation handling policy
+ */
+export type ViolationPolicy = "error" | "warn" | "ignore"
+
+/**
+ * SandboxConfig - C-05: Configuration for SandboxEnforcer
+ */
+export interface SandboxConfig {
+  enabled: boolean  // default true
+  tool_execution: ToolExecutionMode  // default "isolated"
+  data_access: DataAccessMode  // default "scoped"
+  network_policy?: string  // Future use
+  on_violation: ViolationPolicy  // default "error"
+}
+
+/**
+ * ToolCall - C-05: Represents a tool invocation request
+ */
+export interface ToolCall {
+  tool_id: string
+  input: any
+  agent_id: string
+}
+
+/**
+ * ToolExecutionResult - C-05: Result of enforced tool execution
+ */
+export interface ToolExecutionResult {
+  success: boolean
+  output?: any
+  error?: string
+  failure_type?: FailureType
+  retry_attempted?: boolean
 }
