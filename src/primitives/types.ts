@@ -105,6 +105,38 @@ export class BlobNotFoundError extends Error {
 }
 
 /**
+ * BlobStoreBackend - Abstract interface for blob storage backend
+ * Supports in-memory (single-node), S3, and GCS implementations
+ *
+ * Requirements: BS-01 (distributed backend), BS-02 (sync write), BS-03 (read failure)
+ */
+export interface BlobStoreBackend {
+  /**
+   * Write a payload to the blob store
+   * Returns DataRef with ref_id, schema, size_bytes
+   */
+  write(run_id: string, payload: unknown, schema: string): Promise<DataRef>
+
+  /**
+   * Read a payload from the blob store
+   * Throws BlobNotFoundError if ref_id does not exist
+   */
+  read(ref_id: string): Promise<unknown>
+
+  /**
+   * Delete a blob from the store
+   * Idempotent - no error if blob does not exist
+   */
+  delete(ref_id: string): Promise<void>
+
+  /**
+   * List all blobs for a specific run_id
+   * Uses run_id-scoped index (no table scans)
+   */
+  list(run_id: string): Promise<DataRef[]>
+}
+
+/**
  * Event emitted through MessageBus
  */
 export interface Event {
