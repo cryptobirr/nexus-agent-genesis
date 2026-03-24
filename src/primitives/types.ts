@@ -284,6 +284,40 @@ export interface ExecutionMemory {
   attempts: number
   previous_outputs: string[]
   context: string
+  retrieved_chunks?: ContextChunk[]  // P-16: cached chunks for re-injection
+}
+
+/**
+ * ContextChunk - Single chunk of context for assembly (P-16)
+ */
+export interface ContextChunk {
+  chunk_id: string
+  content: string
+  source: string
+  embedding?: number[]
+  base_relevance_score?: number
+}
+
+/**
+ * ContextAssemblyPolicy - Configuration for context retrieval (P-16)
+ */
+export interface ContextAssemblyPolicy {
+  ranking_model: "embedding" | "cross_encoder"
+  diversity_penalty: number  // 0-1 scalar
+  max_chunks: number
+  relevance_threshold: number
+  retrieval_sources: string[]  // e.g., ["schema_reference", "documentation"]
+  strategy?: Strategy  // Optional strategy override
+  available_chunks?: ContextChunk[]  // Chunks to rank (for testing/mocking)
+}
+
+/**
+ * AssembledContext - Output of ContextAssembler.assemble() (P-16)
+ */
+export interface AssembledContext {
+  chunks: ContextChunk[]
+  from_cache: boolean
+  total_tokens?: number
 }
 
 /**
