@@ -267,3 +267,24 @@ export interface ExecutionMemory {
   previous_outputs: string[]
   context: string
 }
+
+/**
+ * OutputSpec - Schema declaration for Executor output (P-14)
+ */
+export interface OutputSpec {
+  type: "text" | "json" | "code" | "artifact" | "tool_result"
+  schema: string | null  // JSON schema as string
+  required_fields: string[]
+  max_tokens: number | null
+  max_normalization_bytes: number
+  normalization_mode: "strict" | "structural_only" | "passthrough"
+}
+
+/**
+ * NormalizationResult - Result of OutputNormalizer.normalize() (P-14)
+ */
+export interface NormalizationResult {
+  normalized_output: unknown
+  passed: boolean
+  failure_reason: string | null
+}
