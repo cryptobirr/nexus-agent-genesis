@@ -15,6 +15,7 @@ import type {
 export interface CancellationResult {
   terminated: boolean
   cancelled_agent_ids: string[]
+  in_flight_count?: number  // Count of GENERATING/GATE*_EVALUATING agents allowed to complete
   coverage_state?: {
     covered_count: number
     uncovered_count: number
@@ -108,6 +109,9 @@ export class EarlyTerminationController {
       }
     }
 
+    // Count in-flight agents (GENERATING, GATE1_EVALUATING, GATE2_EVALUATING)
+    const inFlightCount = this.countInFlightAgents(cancellationOrder)
+
     // Build coverage state for event
     const coverageState = {
       covered_count: coverageResult.covered_count,
@@ -118,12 +122,14 @@ export class EarlyTerminationController {
     // Emit early_termination event
     this.messageBus.emit(run_id, 'early_termination_triggered', {
       coverage_state: coverageState,
-      cancelled_agent_ids: cancelledAgentIds
+      cancelled_agent_ids: cancelledAgentIds,
+      in_flight_count: inFlightCount
     })
 
     return {
       terminated: true,
       cancelled_agent_ids: cancelledAgentIds,
+      in_flight_count: inFlightCount,
       coverage_state: coverageState
     }
   }
@@ -174,6 +180,24 @@ export class EarlyTerminationController {
     }
 
     return cancellable
+  }
+
+  /**
+   * Count agents in in-flight states (GENERATING, GATE1_EVALUATING, GATE2_EVALUATING)
+   * These agents are allowed to complete after early termination fires
+   */
+  private countInFlightAgents(agentIds: string[]): number {
+    let count = 0
+
+    for (const agentId of agentIds) {
+      const state = this.agentStateManager.getState(agentId)
+
+      if (state === 'GENERATING' || state === 'GATE1_EVALUATING' || state === 'GATE2_EVALUATING') {
+        count++
+      }
+    }
+
+    return count
   }
 
   /**

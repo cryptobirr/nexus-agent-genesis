@@ -1155,4 +1155,6 @@ export interface Run {
   early_termination?: boolean
   // Extended field for UAT-072
   plan_source?: 'fresh' | 'cache'
+  // Extended field for UAT-082 (F-04 spec)
+  early_termination_in_flight_count?: number
 }

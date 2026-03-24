@@ -110,7 +110,8 @@ describe('EarlyTerminationController', () => {
           uncovered_count: 0,
           confidence: 0.9
         },
-        cancelled_agent_ids: ['agent3', 'agent4']
+        cancelled_agent_ids: ['agent3', 'agent4'],
+        in_flight_count: 0
       })
     })
 
@@ -372,7 +373,8 @@ describe('EarlyTerminationController', () => {
           uncovered_count: 0,
           confidence: 1.0
         },
-        cancelled_agent_ids: ['queued']
+        cancelled_agent_ids: ['queued'],
+        in_flight_count: 0
       })
     })
   })
