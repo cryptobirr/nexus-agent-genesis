@@ -87,3 +87,32 @@ export type EventHandler = (event_type: string, payload: object) => void
  * Unsubscribe function returned by subscribe()
  */
 export type UnsubscribeFn = () => void
+
+/**
+ * Tool definition for ToolRegistry
+ */
+export interface Tool {
+  tool_id: string
+  input_schema: object
+  output_schema: object
+  side_effect_class: string
+}
+
+/**
+ * Injected toolset for scoped tool access
+ */
+export interface InjectedToolset {
+  tools: Tool[]
+  get(tool_id: string): Tool
+  has(tool_id: string): boolean
+}
+
+/**
+ * ToolNotFoundError - thrown when accessing unregistered tool
+ */
+export class ToolNotFoundError extends Error {
+  constructor(public tool_id: string) {
+    super(`Tool not found: ${tool_id}`)
+    this.name = 'ToolNotFoundError'
+  }
+}
