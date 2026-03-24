@@ -489,3 +489,51 @@ export interface ReadResult {
   value: any
   version_id: number
 }
+
+/**
+ * DependencyEdge - C-02: Edge in dependency graph
+ */
+export interface DependencyEdge {
+  from_node_id: string  // Prerequisite agent
+  to_node_id: string    // Dependent agent
+  edge_type: "data" | "control" | "output"
+  timeout_ms: number | null  // TTL for prerequisite completion
+  on_timeout: "fail" | "proceed_degraded" | null
+  fallback_payload?: any  // Used when on_timeout="proceed_degraded"
+  output_contract?: OutputSpec | null  // For "output" edges
+}
+
+/**
+ * DependencyGraph - C-02: Collection of nodes and edges
+ */
+export interface DependencyGraph {
+  nodes: string[]  // Node IDs
+  edges: DependencyEdge[]
+  run_id: string
+}
+
+/**
+ * ValidationResult - C-02: Result of DAG validation
+ */
+export interface ValidationResult {
+  valid: boolean
+  cycles: string[][]  // List of cycles found, e.g., [["A", "B", "C", "A"]]
+  orphans: string[]   // Nodes with no path to root
+  errors: string[]
+}
+
+/**
+ * TopologicalOrder - C-02: Result of topological sort
+ */
+export interface TopologicalOrder {
+  order: string[]  // Nodes in execution order
+  levels: Map<string, number>  // Node → depth from root
+}
+
+/**
+ * DependencyGraphConfig - C-02: Configuration for DependencyGraphManager
+ */
+export interface DependencyGraphConfig {
+  enable_ttl_monitoring: boolean  // default true
+  default_timeout_behavior: "fail" | "proceed_degraded"  // default "fail"
+}
