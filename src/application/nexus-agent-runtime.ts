@@ -133,6 +133,7 @@ export class NexusAgentRuntime {
       const requirementMap = this.extractRequirementMap(trace)
       const dependencyGraph = this.extractDependencyGraph(trace, agents_spawned)
       const earlyTermination = this.checkEarlyTermination(trace)
+      const planSource = this.extractPlanSource(trace)
 
       return {
         run_id,
@@ -150,7 +151,9 @@ export class NexusAgentRuntime {
         trace_eval: eval_result,
         requirement_map: requirementMap,
         dependency_graph: dependencyGraph,
-        early_termination: earlyTermination
+        early_termination: earlyTermination,
+        // Extended field for UAT-072
+        plan_source: planSource
       }
     } catch (error) {
       // Unrecoverable error
@@ -481,6 +484,15 @@ export class NexusAgentRuntime {
       e.event_type === 'early_termination_triggered' ||
       e.event_type === 'kill_switch_activated'
     )
+  }
+
+  /**
+   * Extract plan source from trace events
+   * Returns 'cache' if router_cache_hit event found, 'fresh' otherwise
+   */
+  private extractPlanSource(trace: any[]): 'fresh' | 'cache' {
+    const cacheHit = trace.some(e => e.event_type === 'router_cache_hit')
+    return cacheHit ? 'cache' : 'fresh'
   }
 
   /**

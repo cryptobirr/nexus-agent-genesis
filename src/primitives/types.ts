@@ -1153,4 +1153,6 @@ export interface Run {
   requirement_map?: RequirementMap
   dependency_graph?: DependencyGraph
   early_termination?: boolean
+  // Extended field for UAT-072
+  plan_source?: 'fresh' | 'cache'
 }
