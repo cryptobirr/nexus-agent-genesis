@@ -185,11 +185,14 @@ export interface CoverageResult {
 }
 
 /**
- * AgentNode - represents an agent execution node for coverage matching
+ * AgentNode - represents an agent execution node for coverage matching and compression
  */
 export interface AgentNode {
   node_id: string
   requirements_covered: string[]
+  output?: string  // Agent output (text or structured)
+  data_refs?: DataRef[]  // References to blob store
+  is_escalated?: boolean  // Escalation flag for compression bypass
 }
 
 /**
@@ -339,4 +342,15 @@ export interface NormalizationResult {
   normalized_output: unknown
   passed: boolean
   failure_reason: string | null
+}
+
+/**
+ * ChunkSummary - Compressed representation of agent output (P-17)
+ */
+export interface ChunkSummary {
+  node_id: string
+  summary: string  // LLM-generated for text, empty for data_refs
+  data_refs: DataRef[]  // Blob store references (bypasses compression)
+  is_escalated: boolean  // If true, never compressed
+  full_content?: string  // Only populated for escalated nodes
 }
