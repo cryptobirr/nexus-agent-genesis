@@ -281,13 +281,26 @@ export interface ModelAdapter {
 }
 
 /**
- * ExecutionMemory - Context for retry prompt composition (P-13, P-18)
+ * FailedStrategy - Record of a failed attempt for retry prompts (P-20, C-07)
+ */
+export interface FailedStrategy {
+  attempt: number
+  failure_type: FailureType
+  gate: 1 | 2 | 'precheck'
+  gap: string
+  output?: string
+}
+
+/**
+ * ExecutionMemory - Per-node, per-run short-term cache (P-20)
+ * Stores retrieved chunks, failed strategies, and successful patterns for retry/context assembly
  */
 export interface ExecutionMemory {
-  attempts: number
-  previous_outputs: string[]
-  context: string
-  retrieved_chunks?: ContextChunk[]  // P-16: cached chunks for re-injection
+  agent_id: string
+  run_id: string
+  retrieved_chunks: string[]  // chunk_ids, max 500, LRU eviction
+  failed_strategies: FailedStrategy[]  // max max_retries
+  successful_patterns: SuccessfulPattern[]  // loaded at init from Meta Loop
 }
 
 /**
