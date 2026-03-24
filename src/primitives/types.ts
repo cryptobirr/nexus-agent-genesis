@@ -67,3 +67,23 @@ export class BlobNotFoundError extends Error {
     this.name = 'BlobNotFoundError'
   }
 }
+
+/**
+ * Event emitted through MessageBus
+ */
+export interface Event {
+  event_type: string
+  payload: object
+  run_id: string
+  timestamp: number
+}
+
+/**
+ * Event handler function
+ */
+export type EventHandler = (event_type: string, payload: object) => void
+
+/**
+ * Unsubscribe function returned by subscribe()
+ */
+export type UnsubscribeFn = () => void
