@@ -225,3 +225,11 @@ export interface SuccessfulPattern {
   created_at: string
   run_id: string
 }
+
+/**
+ * PreCheckResult - result of DeterministicPreCheck validation (P-12)
+ */
+export interface PreCheckResult {
+  passed: boolean
+  violations: string[]
+}
