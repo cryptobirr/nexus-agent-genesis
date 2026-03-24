@@ -1147,4 +1147,10 @@ export interface Run {
   error?: string
   started_at: number
   completed_at?: number
+  // Extended fields for UAT-071
+  router_classification?: 'atomic' | 'simple' | 'moderate' | 'complex'
+  trace_eval?: { score: number; passed: boolean; dimensions?: any[] }
+  requirement_map?: RequirementMap
+  dependency_graph?: DependencyGraph
+  early_termination?: boolean
 }
