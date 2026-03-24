@@ -5,3 +5,4 @@ export { EarlyTerminationController, type CancellationResult } from './early-ter
 export { KillSwitchController, type KillSwitchConfig, type KillSwitchTrigger } from './kill-switch-controller.js'
 export { OuterLoopController, type OuterLoopConfig, type OuterLoopTrigger } from './outer-loop.js'
 export { MetaLoop } from './meta-loop.js'
+export { TraceEvaluation, type TraceEvaluationInput, type TraceEvaluationResult } from './trace-evaluation.js'
