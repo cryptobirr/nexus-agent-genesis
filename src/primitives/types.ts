@@ -116,3 +116,11 @@ export class ToolNotFoundError extends Error {
     this.name = 'ToolNotFoundError'
   }
 }
+
+/**
+ * Domain hint for context assembly and model routing
+ */
+export interface DomainHint {
+  domain_id: string
+  keywords: string[]
+}
