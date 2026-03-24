@@ -193,6 +193,8 @@ export interface AgentNode {
   output?: string  // Agent output (text or structured)
   data_refs?: DataRef[]  // References to blob store
   is_escalated?: boolean  // Escalation flag for compression bypass
+  agent_type?: AgentType  // For contract lookup in PlanValidator (C-03)
+  output_spec?: OutputSpec  // For output_contract satisfiability check (C-03)
 }
 
 /**
@@ -536,4 +538,49 @@ export interface TopologicalOrder {
 export interface DependencyGraphConfig {
   enable_ttl_monitoring: boolean  // default true
   default_timeout_behavior: "fail" | "proceed_degraded"  // default "fail"
+}
+
+/**
+ * PlanValidationCheckType - C-03: Types of validation checks performed by PlanValidator
+ */
+export type PlanValidationCheckType =
+  | 'acyclicity'
+  | 'output_contract_satisfiability'
+  | 'coverage_completeness'
+  | 'cost_bounds'
+  | 'depth_cap'
+  | 'orphan_detection'
+
+/**
+ * FailureSeverity - C-03: Severity classification for validation failures
+ */
+export type FailureSeverity = 'fatal' | 'fixable'
+
+/**
+ * ValidationFailure - C-03: Single validation check failure
+ */
+export interface ValidationFailure {
+  check: PlanValidationCheckType
+  severity: FailureSeverity
+  message: string
+  details?: any
+}
+
+/**
+ * PlanValidationResult - C-03: Result of PlanValidator.validate()
+ */
+export interface PlanValidationResult {
+  valid: boolean
+  failures: ValidationFailure[]
+  retryable: boolean  // true if all failures are fixable, false if any fatal
+}
+
+/**
+ * PlanValidatorConfig - C-03: Configuration for PlanValidator
+ */
+export interface PlanValidatorConfig {
+  max_plan_cost: number          // default 1000
+  cost_tolerance: number         // default 1.2 (20% over budget is fixable)
+  max_depth: number              // default 5
+  allow_decomposable_depth: boolean  // default true (depth > max is fixable)
 }
