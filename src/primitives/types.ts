@@ -441,3 +441,51 @@ export interface ProviderConfig {
   provider: TicketProvider
   config?: any  // Provider-specific config (e.g., GitHub repo, Jira project)
 }
+
+/**
+ * ConflictResolutionPolicy - C-01: SECManager conflict resolution strategy
+ */
+export type ConflictResolutionPolicy = 'reject' | 'merge' | 'priority' | 'escalate'
+
+/**
+ * AgentRole - C-01: Agent role for access control
+ */
+export type AgentRole = 'planner' | 'executor' | 'router'
+
+/**
+ * SECConfig - C-01: Configuration for SECManager
+ */
+export interface SECConfig {
+  max_occ_retries: number           // default 2
+  SEC_list_max_entries: number      // default 10000
+  default_policy: ConflictResolutionPolicy  // default 'merge'
+}
+
+/**
+ * ConflictInfo - C-01: Information about an OCC conflict
+ */
+export interface ConflictInfo {
+  key: string
+  attempted_value: any
+  current_value: any
+  current_version_id: number
+}
+
+/**
+ * WriteResult - C-01: Result of SECManager write operation
+ */
+export interface WriteResult {
+  success: boolean
+  version_id?: number
+  conflict?: ConflictInfo
+  escalated?: boolean
+  requires_redecompose?: boolean  // True if merge resulted in structural change
+}
+
+/**
+ * ReadResult - C-01: Result of SECManager read operation
+ */
+export interface ReadResult {
+  value: any
+  version_id: number
+}
