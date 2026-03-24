@@ -30,9 +30,11 @@ export class TicketSystem {
     occ_max_retries_exceeded: 'CRITICAL',
     kill_switch_triggered: 'CRITICAL',
     sandbox_violation: 'CRITICAL',
+    agent_error: 'CRITICAL',           // C-08: ERROR state transition
     sec_size_warning: 'MAJOR',
     budget_exceeded: 'MAJOR',
     infrastructure_failure: 'MAJOR',
+    agent_escalated: 'MAJOR',          // C-08: ESCALATED state transition
     recursion_guard_triggered: 'MINOR',
     recursion_guard_override: 'MINOR',
     recursion_guard_scope_override: 'MINOR',

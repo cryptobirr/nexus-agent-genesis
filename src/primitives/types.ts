@@ -401,6 +401,8 @@ export type TriggerType =
   | 'sandbox_violation'
   | 'budget_exceeded'
   | 'infrastructure_failure'
+  | 'agent_escalated'  // C-08: Agent transitioned to ESCALATED state
+  | 'agent_error'      // C-08: Agent transitioned to ERROR state
 
 /**
  * Severity - P-19: Ticket severity levels
@@ -691,4 +693,42 @@ export interface RetryDecision {
   should_escalate: boolean
   retry_count_consumed: boolean  // false for infrastructure_failure, blob_write_failure
   backoff_ms?: number  // for blob_write_failure exponential backoff
+}
+
+/**
+ * AgentState - C-08: Agent execution state
+ */
+export type AgentState =
+  | "QUEUED"
+  | "AWAITING_HITL"
+  | "PRECHECKING"
+  | "GENERATING"
+  | "GATE1_EVALUATING"
+  | "GATE2_EVALUATING"
+  | "COMPLETE"
+  | "ESCALATED"
+  | "RETRYING"
+  | "CANCELLED"
+  | "ERROR"
+  | "PARTIALLY_COMPLETE"  // Planner-only
+  | "PARTIAL_COMPLETE"     // Run-level
+
+/**
+ * StateTransitionResult - C-08: Result of state transition attempt
+ */
+export interface StateTransitionResult {
+  success: boolean
+  current_state: AgentState
+  error_reason?: string
+}
+
+/**
+ * StateTransitionContext - C-08: Context for state transition
+ */
+export interface StateTransitionContext {
+  agent_id: string
+  run_id: string
+  agent_type?: "router" | "planner" | "executor"
+  reason?: string
+  best_output?: string  // For ESCALATED state
 }
