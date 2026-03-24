@@ -152,3 +152,41 @@ export interface Contract {
   agent_type: AgentType
   dimensions: Dimension[]
 }
+
+/**
+ * Priority level for requirements
+ */
+export type Priority = "high" | "medium" | "low"
+
+/**
+ * RequirementRecord - single requirement with coverage tracking
+ */
+export interface RequirementRecord {
+  id: string
+  description: string
+  priority: Priority
+  coverage_score: number  // 0.0 to 1.0
+}
+
+/**
+ * RequirementMap - collection of requirements keyed by id
+ */
+export type RequirementMap = Map<string, RequirementRecord>
+
+/**
+ * CoverageResult - result of coverage check operation
+ */
+export interface CoverageResult {
+  covered_count: number
+  uncovered_count: number
+  covered_ids: string[]
+  uncovered_ids: string[]
+}
+
+/**
+ * AgentNode - represents an agent execution node for coverage matching
+ */
+export interface AgentNode {
+  node_id: string
+  requirements_covered: string[]
+}
