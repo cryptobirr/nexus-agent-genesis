@@ -818,3 +818,43 @@ export interface PlannerConfig {
   available_budget: number
   max_retries?: number  // default 2 for OCC
 }
+
+/**
+ * ExecutorConfig - F-03: Configuration for ExecutorAgent.execute()
+ */
+export interface ExecutorConfig {
+  run_id: string
+  agent_id: string
+  parent_id: string | null
+  scope: string
+  strategy: Strategy
+  output_spec: OutputSpec
+  attempt_number: number
+  failed_strategies: Strategy[]
+  context_assembly_policy: ContextAssemblyPolicy
+  max_retries?: number
+}
+
+/**
+ * ExecutorOutput - F-03: Output from ExecutorAgent
+ */
+export interface ExecutorOutput {
+  mode: "llm_output" | "tool_call"
+  content: string | unknown
+  data_refs: string[]
+  idempotency_key: string
+  evaluation_scores: Record<string, number>
+  normalization_passed: boolean
+  from_cache: boolean
+}
+
+/**
+ * ToolCall - Tool execution result
+ */
+export interface ToolCall {
+  tool_name: string
+  tool_inputs: Record<string, unknown>
+  tool_outputs: unknown
+  execution_time_ms: number
+  cached: boolean
+}
