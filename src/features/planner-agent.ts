@@ -97,6 +97,15 @@ export class PlannerAgent {
         if (writeSuccess.conflict && attempt < maxRetries) {
           lastConflict = writeSuccess.conflict
 
+          // Emit sec_occ_retry event as per UAT-073 AC5 and AC8
+          this.messageBus.emit(config.run_id, 'sec_occ_retry', {
+            run_id: config.run_id,
+            agent_id: config.agent_id,
+            attempt: attempt + 1,
+            key: lastConflict.key
+          })
+
+          // Also emit planner-specific event for backwards compatibility
           this.messageBus.emit(config.run_id, 'planner_occ_retry', {
             attempt: attempt + 1,
             conflict: lastConflict,

@@ -41,10 +41,9 @@ export class KillSwitchController {
   // Run start times for wall clock SLA tracking
   private runStartTimes = new Map<string, number>()
 
-  // States that can be immediately cancelled (QUEUED, RETRYING)
+  // States that can be immediately cancelled (QUEUED only - RETRYING needs special handling)
   private static readonly CANCELLABLE_STATES: Set<AgentState> = new Set([
-    'QUEUED',
-    'RETRYING'
+    'QUEUED'
   ])
 
   // States that are in-flight (GENERATING, evaluating)
@@ -135,16 +134,69 @@ export class KillSwitchController {
    * @param agent_ids - All agent IDs in run
    */
   abortRun(run_id: string, trigger: KillSwitchTrigger, agent_ids: string[]): void {
-    // Transition all agents to ERROR
+    // Transition agents based on their current state
+    // QUEUED → CANCELLED (can't go directly to ERROR)
+    // GENERATING/IN_FLIGHT → ERROR
+    // RETRYING → (transition to GENERATING first, then ERROR if needed)
     for (const agent_id of agent_ids) {
-      this.agentStateManager.transition(
-        {
-          agent_id,
-          run_id,
-          reason: `Kill switch triggered: ${trigger}`
-        },
-        'ERROR'
-      )
+      const state = this.agentStateManager.getState(agent_id)
+
+      if (state === 'QUEUED') {
+        // QUEUED can only transition to CANCELLED
+        this.agentStateManager.transition(
+          {
+            agent_id,
+            run_id,
+            reason: `Kill switch triggered: ${trigger}`
+          },
+          'CANCELLED'
+        )
+      } else if (state === 'RETRYING') {
+        // RETRYING can only transition to GENERATING, then to ERROR
+        // For abort_run, we'll transition to GENERATING then immediately to ERROR
+        const result = this.agentStateManager.transition(
+          {
+            agent_id,
+            run_id,
+            reason: `Kill switch triggered: ${trigger}`
+          },
+          'GENERATING'
+        )
+        if (result.success) {
+          this.agentStateManager.transition(
+            {
+              agent_id,
+              run_id,
+              reason: `Kill switch triggered: ${trigger}`
+            },
+            'ERROR'
+          )
+        }
+      } else if (state && (KillSwitchController.IN_FLIGHT_STATES.has(state) || state === 'AWAITING_HITL' || state === 'PRECHECKING')) {
+        // GENERATING, GATE1_EVALUATING, GATE2_EVALUATING can transition to ERROR
+        // AWAITING_HITL can transition to ESCALATED (closest to ERROR for non-generating states)
+        // PRECHECKING can transition to ESCALATED
+        if (state === 'GENERATING') {
+          this.agentStateManager.transition(
+            {
+              agent_id,
+              run_id,
+              reason: `Kill switch triggered: ${trigger}`
+            },
+            'ERROR'
+          )
+        } else {
+          // For other in-flight states that can't go to ERROR, use ESCALATED
+          this.agentStateManager.transition(
+            {
+              agent_id,
+              run_id,
+              reason: `Kill switch triggered: ${trigger}`
+            },
+            'ESCALATED'
+          )
+        }
+      }
     }
 
     // Set run state to ERROR
@@ -220,11 +272,12 @@ export class KillSwitchController {
     trigger: KillSwitchTrigger,
     agent_ids: string[]
   ): Promise<void> {
-    // Cancel QUEUED and RETRYING agents immediately
+    // Cancel QUEUED agents and handle RETRYING agents
     for (const agent_id of agent_ids) {
       const state = this.agentStateManager.getState(agent_id)
 
-      if (state && KillSwitchController.CANCELLABLE_STATES.has(state)) {
+      if (state === 'QUEUED') {
+        // QUEUED can transition to CANCELLED
         this.agentStateManager.transition(
           {
             agent_id,
@@ -233,6 +286,26 @@ export class KillSwitchController {
           },
           'CANCELLED'
         )
+      } else if (state === 'RETRYING') {
+        // RETRYING can't go to CANCELLED directly, transition to GENERATING then ESCALATED
+        const result = this.agentStateManager.transition(
+          {
+            agent_id,
+            run_id,
+            reason: `Kill switch finalize_partial: ${trigger}`
+          },
+          'GENERATING'
+        )
+        if (result.success) {
+          this.agentStateManager.transition(
+            {
+              agent_id,
+              run_id,
+              reason: `Kill switch finalize_partial: ${trigger}`
+            },
+            'ESCALATED'
+          )
+        }
       }
     }
 
