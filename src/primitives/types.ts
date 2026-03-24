@@ -233,3 +233,37 @@ export interface PreCheckResult {
   passed: boolean
   violations: string[]
 }
+
+/**
+ * FailureType - P-13: Deterministic failure type classification
+ */
+export type FailureType =
+  | 'retrieval_failure'
+  | 'reasoning_failure'
+  | 'planning_failure'
+  | 'tool_failure'
+  | 'timeout_failure'
+  | 'novelty_failure'
+  | 'schema_failure'
+  | 'infrastructure_failure'
+  | 'blob_write_failure'
+
+/**
+ * Signal - Judge verdict for a single Dimension (P-15)
+ */
+export interface Signal {
+  verdict: boolean
+  numeric_score: number
+  gap: number
+  severity: 'low' | 'medium' | 'high' | 'critical'
+  reasoning: string
+}
+
+/**
+ * ExecutionMemory - Context for retry prompt composition (P-13, P-18)
+ */
+export interface ExecutionMemory {
+  attempts: number
+  previous_outputs: string[]
+  context: string
+}
