@@ -6,3 +6,4 @@ export { KillSwitchController, type KillSwitchConfig, type KillSwitchTrigger } f
 export { OuterLoopController, type OuterLoopConfig, type OuterLoopTrigger } from './outer-loop.js'
 export { MetaLoop } from './meta-loop.js'
 export { TraceEvaluation, type TraceEvaluationInput, type TraceEvaluationResult } from './trace-evaluation.js'
+export { AdaptiveDepthController } from './adaptive-depth-controller.js'

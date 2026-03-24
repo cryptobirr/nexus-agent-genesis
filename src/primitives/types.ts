@@ -881,3 +881,31 @@ export interface ToolCall {
   execution_time_ms: number
   cached: boolean
 }
+
+/**
+ * ExpansionResult - F-09: Result of depth expansion check
+ */
+export interface ExpansionResult {
+  should_expand: boolean
+  suppressed: boolean
+  suppression_reason?: string
+  coverage_gap_detected: boolean
+}
+
+/**
+ * ShrinkageResult - F-09: Result of depth shrinkage check
+ */
+export interface ShrinkageResult {
+  should_shrink: boolean
+  low_entropy_detected: boolean
+  similarity_score?: number
+}
+
+/**
+ * AdaptiveDepthControllerConfig - F-09: Configuration for AdaptiveDepthController
+ */
+export interface AdaptiveDepthControllerConfig {
+  expansion_cost_reserve: number  // 0.0 to 1.0 (default 0.2 = 20%)
+  low_entropy_threshold: number   // 0.0 to 1.0 (default 0.95)
+  max_depth: number               // Hard cap (default 10)
+}
