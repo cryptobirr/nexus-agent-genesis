@@ -941,3 +941,120 @@ export interface WeightSnapshot {
   weights: Map<string, number>
   created_at: string
 }
+
+/**
+ * BudgetPolicy - M-04: Budget enforcement policy
+ */
+export interface BudgetPolicy {
+  limits: BudgetLimits
+  enforcement_mode: 'hard' | 'soft'
+}
+
+/**
+ * RepairPolicy - M-04: Agent repair strategy
+ */
+export interface RepairPolicy {
+  max_retries: number
+  backoff_strategy: 'exponential' | 'linear' | 'constant'
+  initial_delay_ms: number
+}
+
+/**
+ * CompressionPolicy - M-04: Context compression settings
+ */
+export interface CompressionPolicy {
+  enabled: boolean
+  min_tokens_for_compression: number
+  compression_ratio_target: number
+}
+
+/**
+ * DepthPolicy - M-04: Depth control policy
+ */
+export interface DepthPolicy {
+  max_depth: number
+  adaptive_enabled: boolean
+  depth_budget_tokens: number
+}
+
+/**
+ * EarlyTerminationPolicy - M-04: Early termination conditions
+ */
+export interface EarlyTerminationPolicy {
+  enabled: boolean
+  conditions: string[]  // e.g., ["budget_exceeded", "objective_met"]
+}
+
+/**
+ * ModelPolicy - M-04: Model selection policy
+ */
+export interface ModelPolicy {
+  default_model: string
+  router_model?: string
+  planner_model?: string
+  executor_model?: string
+  fallback_model?: string
+}
+
+/**
+ * MergedJudgePolicy - M-04: Merged judging policy
+ */
+export interface MergedJudgePolicy {
+  merge_strategy: 'unanimous' | 'majority' | 'weighted'
+  judge_count: number
+}
+
+/**
+ * BlobStorePolicy - M-04: Blob storage policy
+ */
+export interface BlobStorePolicy {
+  provider: 'memory' | 's3' | 'gcs' | 'redis'
+  max_blob_size_bytes: number
+  ttl_seconds?: number
+}
+
+/**
+ * RunConfig - M-04: Complete runtime configuration for a run
+ * All policies injectable and overridable per run
+ */
+export interface RunConfig {
+  // Core policies
+  budget_policy: BudgetPolicy
+  repair_policy: RepairPolicy
+  judging_policy: JudgingPolicy
+  context_assembly_policy: ContextAssemblyPolicy
+  compression_policy: CompressionPolicy
+  depth_policy: DepthPolicy
+  early_termination_policy: EarlyTerminationPolicy
+  model_policy: ModelPolicy
+  merged_judge_policy: MergedJudgePolicy
+  blob_store_policy: BlobStorePolicy
+
+  // Existing configs promoted to policies
+  parallelism_policy: { max_concurrent_agents: number }
+  latency_sla_policy: {
+    budgets: { executor: number; planner: number; router: number }
+    on_violation: 'degrade' | 'escalate'
+  }
+  sandbox_config: SandboxConfig
+  conflict_resolution_policy: ConflictResolutionPolicy
+
+  // Recursion guard thresholds
+  recursion_guard: {
+    max_depth: number
+    max_iterations: number
+  }
+
+  // Kill switch
+  kill_switch: {
+    enabled: boolean
+    conditions: string[]
+  }
+
+  // Registry versions (for cache invalidation)
+  contract_registry_version?: string
+  tool_registry_version?: string
+
+  // Computed hash (populated by ConfigModule)
+  run_config_hash?: string
+}
