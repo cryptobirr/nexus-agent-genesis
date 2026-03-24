@@ -2,3 +2,5 @@ dev/
 !dev/
 dev/*
 !dev/specs/
+node_modules/
+dist/
