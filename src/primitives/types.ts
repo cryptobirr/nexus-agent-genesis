@@ -260,6 +260,24 @@ export interface Signal {
 }
 
 /**
+ * JudgeContext - Execution context for Judge evaluation (P-15)
+ */
+export interface JudgeContext {
+  agent_output: string
+  dimension_criteria: Map<string, string>
+  run_id: string
+}
+
+/**
+ * ModelAdapter - LLM interface for P-15 (JudgeRunner) and P-17 (ContextCompressor)
+ */
+export interface ModelAdapter {
+  call(prompt: string): Promise<string>
+  getContextWindowSize(): number
+  estimateTokens(text: string): number
+}
+
+/**
  * ExecutionMemory - Context for retry prompt composition (P-13, P-18)
  */
 export interface ExecutionMemory {
