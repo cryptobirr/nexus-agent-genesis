@@ -369,3 +369,62 @@ export interface PlanCacheEntry {
   run_id: string
   similarity_score?: number  // Populated on cache hit
 }
+
+/**
+ * TriggerType - P-19: Ticket trigger types
+ */
+export type TriggerType =
+  | 'occ_max_retries_exceeded'
+  | 'sec_size_warning'
+  | 'kill_switch_triggered'
+  | 'recursion_guard_triggered'
+  | 'recursion_guard_scope_override'
+  | 'depth_expansion_suppressed'
+  | 'sandbox_violation'
+  | 'budget_exceeded'
+  | 'infrastructure_failure'
+
+/**
+ * Severity - P-19: Ticket severity levels
+ */
+export type Severity = 'CRITICAL' | 'MAJOR' | 'MINOR'
+
+/**
+ * TicketContext - P-19: Context for ticket filing
+ */
+export interface TicketContext {
+  run_id: string
+  agent_id?: string  // Optional - run-level tickets don't have agent_id
+  failure_gate?: 1 | 2 | 'precheck'  // Optional
+  failure_type?: FailureType  // Optional - from P-13
+  [key: string]: any  // Allow additional context fields
+}
+
+/**
+ * Ticket - P-19: Structured ticket for routing to external providers
+ */
+export interface Ticket {
+  ticket_id: string  // UUID
+  ticket_type: TriggerType
+  severity: Severity
+  run_id: string
+  agent_id?: string
+  failure_gate?: 1 | 2 | 'precheck'
+  failure_type?: FailureType
+  context: TicketContext
+  filed_at: string  // ISO timestamp
+  status: 'open' | 'resolved' | 'suppressed'
+}
+
+/**
+ * TicketProvider - P-19: Supported ticket routing providers
+ */
+export type TicketProvider = 'InMemory' | 'GitHub' | 'Jira' | 'Linear' | 'Webhook'
+
+/**
+ * ProviderConfig - P-19: Configuration for ticket provider
+ */
+export interface ProviderConfig {
+  provider: TicketProvider
+  config?: any  // Provider-specific config (e.g., GitHub repo, Jira project)
+}
