@@ -1058,3 +1058,25 @@ export interface RunConfig {
   // Computed hash (populated by ConfigModule)
   run_config_hash?: string
 }
+
+/**
+ * RunStatus - A-01: Final status of a run
+ */
+export type RunStatus = "running" | "complete" | "partial_complete" | "escalated" | "error"
+
+/**
+ * Run - A-01: Result of a NexusAgentRuntime.run() invocation
+ */
+export interface Run {
+  run_id: string
+  status: RunStatus
+  objective: string
+  config: RunConfig
+  trace: Event[]  // Full execution trace from ObservabilityModule
+  eval_result?: any  // TraceEvaluationResult if completed
+  budget_consumed: BudgetState
+  agents_spawned: string[]
+  error?: string
+  started_at: number
+  completed_at?: number
+}
