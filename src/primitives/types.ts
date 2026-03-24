@@ -208,3 +208,20 @@ export interface ToolResult {
   output?: any
   error?: string
 }
+
+/**
+ * SuccessfulPattern - stored pattern for similarity-based plan cache and execution memory (P-11, P-18, P-20)
+ */
+export interface SuccessfulPattern {
+  pattern_id: string
+  type: "plan_decomposition" | "sec_write_sequence"
+  objective_cluster: string
+  domain: string | null
+  strategy: string | null
+  embedding: number[]
+  embedding_model_id: string
+  embedding_dimension: number
+  artifact: string
+  created_at: string
+  run_id: string
+}
