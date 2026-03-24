@@ -849,6 +849,29 @@ export interface ExecutorOutput {
 }
 
 /**
+ * ComplexityClassificationLogEntry - F-07: MetaLoop classification log entry
+ * Tracks router classification accuracy for cross-run calibration
+ */
+export interface ComplexityClassificationLogEntry {
+  run_id: string
+  router_classification: ComplexityClassification
+  actual_depth: number
+  trace_eval_score: number
+  timestamp: string
+}
+
+/**
+ * MetaLoopConfig - F-07: Configuration for MetaLoop
+ * Cross-run pattern learning and router calibration
+ */
+export interface MetaLoopConfig {
+  max_pattern_store_size: number          // default 10,000
+  pattern_store_index_threshold: number   // default 1,000 (switch to ANN)
+  eviction_policy: 'lru' | 'oldest_first' // default 'lru'
+  artifact_max_tokens: number             // default 512
+}
+
+/**
  * ToolCall - Tool execution result
  */
 export interface ToolCall {
