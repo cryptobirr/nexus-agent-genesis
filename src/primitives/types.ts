@@ -124,3 +124,31 @@ export interface DomainHint {
   domain_id: string
   keywords: string[]
 }
+
+/**
+ * Agent type for Contract lookup
+ */
+export type AgentType = "router" | "planner" | "executor"
+
+/**
+ * Strategy type for strategy-aware planning
+ */
+export type Strategy = "search" | "synthesize" | "transform" | "analyze" | "validate"
+
+/**
+ * Dimension - one independently evaluable quality
+ */
+export interface Dimension {
+  dimension_id: string
+  weight: number
+  is_binary: boolean
+  gate: 1 | 2
+}
+
+/**
+ * Contract - versioned success specification per agent type
+ */
+export interface Contract {
+  agent_type: AgentType
+  dimensions: Dimension[]
+}
