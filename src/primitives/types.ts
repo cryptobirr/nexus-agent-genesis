@@ -732,3 +732,25 @@ export interface StateTransitionContext {
   reason?: string
   best_output?: string  // For ESCALATED state
 }
+
+/**
+ * HITLCheckpoint - C-09: Human-in-the-loop checkpoint configuration
+ */
+export interface HITLCheckpoint {
+  checkpoint_id: string
+  timeout_ms: number | null
+  on_timeout: "proceed" | "escalate"
+}
+
+/**
+ * HITLResolution - C-09: How a checkpoint was resolved
+ */
+export type HITLResolution = "approved" | "rejected" | "edited" | "timed_out"
+
+/**
+ * HITLModifications - C-09: Modifications from edit action
+ */
+export interface HITLModifications {
+  brief?: string
+  output?: string
+}
