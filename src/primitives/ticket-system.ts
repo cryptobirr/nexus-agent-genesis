@@ -34,7 +34,9 @@ export class TicketSystem {
     budget_exceeded: 'MAJOR',
     infrastructure_failure: 'MAJOR',
     recursion_guard_triggered: 'MINOR',
+    recursion_guard_override: 'MINOR',
     recursion_guard_scope_override: 'MINOR',
+    complexity_override_rule_matched: 'MINOR',
     depth_expansion_suppressed: 'MINOR'
   }
 

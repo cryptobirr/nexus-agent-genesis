@@ -393,7 +393,9 @@ export type TriggerType =
   | 'sec_size_warning'
   | 'kill_switch_triggered'
   | 'recursion_guard_triggered'
+  | 'recursion_guard_override'
   | 'recursion_guard_scope_override'
+  | 'complexity_override_rule_matched'
   | 'depth_expansion_suppressed'
   | 'sandbox_violation'
   | 'budget_exceeded'
@@ -583,4 +585,42 @@ export interface PlanValidatorConfig {
   cost_tolerance: number         // default 1.2 (20% over budget is fixable)
   max_depth: number              // default 5
   allow_decomposable_depth: boolean  // default true (depth > max is fixable)
+}
+
+/**
+ * ComplexityClassification - C-04: Complexity level from Router
+ */
+export type ComplexityClassification = "atomic" | "simple" | "moderate" | "complex"
+
+/**
+ * RecursionDecision - C-04: Planner's recursion decision
+ */
+export type RecursionDecision = "execute" | "recurse"
+
+/**
+ * ComplexityOverrideRule - C-04: Pre-pass rule for complexity override
+ */
+export interface ComplexityOverrideRule {
+  rule_id: string
+  pattern: string  // regex or keyword match on scope_text
+  override_to: ComplexityClassification
+  reason: string
+}
+
+/**
+ * RecursionGuardConfig - C-04: Configuration for RecursionGuard
+ */
+export interface RecursionGuardConfig {
+  min_scope_tokens: number  // default 200
+  near_identical_threshold: number  // default 0.95 (cosine similarity)
+}
+
+/**
+ * RecursionGuardResult - C-04: Result of RecursionGuard.check()
+ */
+export interface RecursionGuardResult {
+  decision: RecursionDecision
+  overridden: boolean
+  override_reason?: string
+  original_decision?: RecursionDecision
 }
